@@ -7,7 +7,7 @@ from numbers import Integral
 from operator import attrgetter
 from struct import Struct
 
-from .hbase.ttypes import TScan
+from .hbase.ttypes import TScan, TAppend
 from .util import thrift_type_to_dict, str_increment, OrderedDict
 from .batch import Batch
 
@@ -497,6 +497,30 @@ class Table(object):
         del kwargs['self']
         return Batch(table=self, **kwargs)
 
+    def append(self, row, data, include_timestamp=False):
+        """Append data to a row in the table.
+
+        This method appends the data in the `data` argument for the row
+        specified by `row`. The `data` argument is dictionary that maps columns
+        to values. Column names must include a family and qualifier part, e.g.
+        `cf:col`, though the qualifier part may be the empty string, e.g.
+        `cf:`.
+
+        :param str row: the row key
+        :param dict data: the data to store
+
+        :return: cell values after append
+        :rtype: list of values
+        """
+        items = data.iteritems()
+        tappend = TAppend(self.name, row, (i[0] for i in items), (i[1] for i in items))
+        cells = self.connection.client.append(self.name, tappend)
+
+        if include_timestamp:
+            return map(make_cell_timestamp, cells)
+        else:
+            return map(make_cell, cells)
+
     #
     # Atomic counters
     #
@@ -568,3 +592,4 @@ class Table(object):
         :rtype: int
         """
         return self.counter_inc(row, column, -value)
+

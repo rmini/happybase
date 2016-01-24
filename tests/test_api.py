@@ -182,6 +182,22 @@ def test_atomic_counters():
     assert_equal(3, table.counter_dec(row, column, 2))
     assert_equal(10, table.counter_dec(row, column, -7))
 
+def test_append():
+    row1 = 'row-to-append1'
+    row2 = 'row-to-append2'
+    col1 = 'cf1:col1'
+    col2 = 'cf1:col2'
+    val1 = '12345'
+    val2 = '67890'
+
+    assert_list_equal([val1], 
+        table.append(row1, {col1: val1}))
+    assert_list_equal([val1 + val2], 
+        table.append(row1, {col1: val2}))
+    assert_list_equal([val1, val2], 
+        table.append(row2, {col1: val1, col2: val2}))
+    assert_list_equal([val1 + val2, val2 + val1], 
+        table.append(row2, {col1: val2, col2: val1}))
 
 def test_batch():
     with assert_raises(TypeError):
