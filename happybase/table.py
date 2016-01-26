@@ -512,9 +512,9 @@ class Table(object):
         :return: cell values after append
         :rtype: list of values
         """
-        items = data.iteritems()
-        tappend = TAppend(self.name, row, (i[0] for i in items), (i[1] for i in items))
-        cells = self.connection.client.append(self.name, tappend)
+        items = data.items()
+        tappend = TAppend(self.name, row, [i[0] for i in items], [i[1] for i in items])
+        cells = self.connection.client.append(tappend)
 
         if include_timestamp:
             return map(make_cell_timestamp, cells)
